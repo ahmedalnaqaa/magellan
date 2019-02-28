@@ -6,6 +6,7 @@ use TaskBundle\Constant\TaskStatuses;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
+use UserBundle\Entity\User;
 
 /**
  * Task
@@ -61,6 +62,14 @@ class Task
      * @Serializer\Groups({"Default"})
      */
     private $issue;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="\UserBundle\Entity\User", inversedBy="tasks")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
+     * @Serializer\Groups({"Details"})
+     * @Serializer\Expose
+     */
+    protected $user;
 
     /**
      * @ORM\PrePersist
@@ -190,5 +199,29 @@ class Task
     public function getIssue()
     {
         return $this->issue;
+    }
+
+    /**
+     * Set user
+     *
+     * @param User $user
+     *
+     * @return Task
+     */
+    public function setUser(User $user)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get user
+     *
+     * @return User
+     */
+    public function getUser()
+    {
+        return $this->user;
     }
 }

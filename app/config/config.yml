@@ -71,10 +71,44 @@ sensio_framework_extra:
    router:
         annotations: false
 
+jms_di_extra:
+    locations:
+        all_bundles: false
+        bundles: [UserBundle, TaskBundle]
+        directories: ["%kernel.root_dir%/../src"]
+    annotation_patterns:
+        - JMS\DiExtraBundle\Annotation
 
 jms_serializer:
     metadata:
         auto_detection: true
+
+fos_user:
+    db_driver:          orm # other valid values are 'mongodb', 'couchdb' and 'propel'
+    firewall_name:      main
+    model_manager_name: ~
+    user_class:         UserBundle\Entity\User
+    registration:
+        form:
+            type: UserBundle\Form\RegistrationFormType
+            validation_groups: [default, registration]
+    from_email:
+        address:        info@tasky.com
+        sender_name:    Task
+    service:
+        mailer:         fos_user.mailer.twig_swift
+
+fos_oauth_server:
+    db_driver: orm       # Driver availables: orm, mongodb, or propel
+    client_class:        UserBundle\Entity\Client
+    access_token_class:  UserBundle\Entity\AccessToken
+    refresh_token_class: UserBundle\Entity\RefreshToken
+    auth_code_class:     UserBundle\Entity\AuthCode
+    service:
+        user_provider: fos_user.user_provider.username_email
+        options:
+            access_token_lifetime: 3600
+            refresh_token_lifetime: 2592000
 
 fos_rest:
     format_listener:

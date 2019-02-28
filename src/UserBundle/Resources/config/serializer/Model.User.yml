@@ -1,0 +1,10 @@
+FOS\UserBundle\Model\User:
+    exclusion_policy: ALL
+    properties :
+        id :
+            expose : true
+        usernameCanonical :
+            expose : true
+            serialized_name: "username"
+        password:
+            expose: false

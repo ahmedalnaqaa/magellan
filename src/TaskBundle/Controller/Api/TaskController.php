@@ -2,6 +2,8 @@
 
 namespace TaskBundle\Controller\Api;
 
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use TaskBundle\Entity\Task;
 use TaskBundle\Form\TaskType;
 use Doctrine\ORM\EntityManager;
@@ -32,6 +34,9 @@ class TaskController extends FOSRestController
      */
     public function createTaskAction(Request $request)
     {
+        if (!$this->getUser()) {
+            throw new AccessDeniedHttpException("Access Denied");
+        }
         /** @var EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         /** @var Task $task */
@@ -41,7 +46,11 @@ class TaskController extends FOSRestController
             'csrf_protection' => false,
         ));
         $form->handleRequest($request);
+        if(!$request->request->get('task')){
+            throw new BadRequestHttpException('all fields are empty');
+        }
         if ($request->isMethod('POST') && $form->isValid()) {
+            $task->setUser($this->getUser());
             $em->persist($task);
             $em->flush();
 
@@ -72,6 +81,10 @@ class TaskController extends FOSRestController
      */
     public function deleteTaskAction(Task $task)
     {
+        if (!$this->getUser() && $task->getUser() != $this->getUser()) {
+            throw new AccessDeniedHttpException("Access Denied");
+        }
+
         /** @var EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         $em->remove($task);
@@ -79,7 +92,6 @@ class TaskController extends FOSRestController
 
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
-
 
     /**
      * Edit Task.
@@ -101,6 +113,9 @@ class TaskController extends FOSRestController
      */
     public function editTaskAction(Task $task, Request $request)
     {
+        if (!$this->getUser() && $task->getUser() != $this->getUser()) {
+            throw new AccessDeniedHttpException("Access Denied");
+        }
         /** @var EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         $form = $this->createForm(TaskType::class, $task, array(
@@ -133,6 +148,9 @@ class TaskController extends FOSRestController
      */
     public function getTasksAction()
     {
+        if (!$this->getUser()) {
+            throw new AccessDeniedHttpException("Access Denied");
+        }
         /** @var EntityManager $em */
         $em = $this->getDoctrine()->getManager();
         $tasks = $em->getRepository('TaskBundle:Task')->findAll();
@@ -161,6 +179,10 @@ class TaskController extends FOSRestController
      */
     public function changeTaskStatusAction(Task $task, Request $request)
     {
+        if (!$this->getUser() && $task->getUser() != $this->getUser()) {
+            throw new AccessDeniedHttpException("Access Denied");
+        }
+
         if ($request->isMethod('post') && $request->get('status')) {
             /** @var EntityManager $em */
             $em = $this->getDoctrine()->getManager();
